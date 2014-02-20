@@ -179,7 +179,7 @@ class Builder
     public function setConfig($config = array(), $connect = true)
     {
         if (is_array($config)) {
-            $this->_configData = array_merge($config, $this->_configData);
+            $this->_configData = array_merge($this->_configData, $config);
         } else {
             throw new \MongoQB\Exception('No config variables passed');
         }

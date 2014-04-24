@@ -153,8 +153,14 @@ class Builder
      * Automatically check if the Mongo PECL extension has been
      *  installed/enabled.
      *
+     * @param array $config
+     * @param bool $connect
+     *
+     * @throws Exception
+     *
      * @access public
-     * @return void
+     *
+     * @return \MongoQB\Builder
      */
     public function __construct(array $config, $connect = true)
     {
@@ -172,7 +178,9 @@ class Builder
      * Set the configuation.
      *
      * @param mixed $config Array of configuration parameters
+     * @param bool $connect
      *
+     * @throws Exception
      * @access public
      * @return void
      */
@@ -194,7 +202,9 @@ class Builder
     /**
      * Switch database.
      *
-     * @param string $database Database name
+     * @param string $dsn
+     *
+     * @throws Exception
      *
      * @access public
      * @return boolean
@@ -218,13 +228,14 @@ class Builder
     }
 
     /**
-    * Drop a database.
-    *
-    * @param string $database Database name
-    *
-    * @access public
-    * @return boolean
-    */
+     * Drop a database.
+     *
+     * @param string $database Database name
+     *
+     * @throws Exception
+     * @access public
+     * @return boolean
+     */
     public function dropDb($database = '')
     {
         if (empty($database)) {
@@ -254,6 +265,7 @@ class Builder
      * @param string $database   Database name
      * @param string $collection Collection name
      *
+     * @throws Exception
      * @access public
      * @return boolean
      */
@@ -730,16 +742,17 @@ class Builder
     }
 
     /**
-    * Get results
-    *
-    * Return the found documents
-    *
-    * @param string $collection    Name of the collection
-    * @param bool   $returnCursor Return the native document cursor
-    *
-    * @access public
-    * @return array
-    */
+     * Get results
+     *
+     * Return the found documents
+     *
+     * @param string $collection    Name of the collection
+     * @param bool   $returnCursor Return the native document cursor
+     *
+     * @throws Exception
+     * @access public
+     * @return array
+     */
     public function get($collection = '', $returnCursor = false)
     {
         if (empty($collection)) {
@@ -779,15 +792,40 @@ class Builder
     }
 
     /**
-    * Count.
-    *
-    * Count the number of found documents
-    *
-    * @param string $collection Name of the collection
-    *
-    * @access public
-    * @return int
-    */
+     * Get one record
+     * @param string $collection
+     *
+     * @return array|null
+     * @throws Exception
+     */
+    public function getOne($collection = '')
+    {
+        if (empty($collection)) {
+            throw new \MongoQB\Exception('In order to retrieve documents from
+             MongoDB, a collection name must be passed');
+        }
+
+        $data = $this->_dbhandle
+            ->{$collection}
+            ->findOne($this->wheres, $this->_selects);
+
+        // Clear
+        $this->_clear($collection, 'getOne');
+
+        return $data;
+    }
+
+    /**
+     * Count.
+     *
+     * Count the number of found documents
+     *
+     * @param string $collection Name of the collection
+     *
+     * @throws Exception
+     * @access public
+     * @return int
+     */
     public function count($collection = '')
     {
         if (empty($collection)) {
@@ -816,6 +854,7 @@ class Builder
      * @param array  $insert     The document to be inserted
      * @param array  $options    Array of options
      *
+     * @throws Exception
      * @access public
      * @return boolean
      */
@@ -869,6 +908,7 @@ class Builder
      * @param array  $insert     The document to be inserted
      * @param array  $options    Array of options
      *
+     * @throws Exception
      * @access public
      * @return boolean
      */
@@ -911,6 +951,7 @@ class Builder
      * @param string $collection Name of the collection
      * @param array  $options    Array of update options
      *
+     * @throws Exception
      * @access public
      * @return boolean
      */
@@ -957,6 +998,7 @@ class Builder
      * @param string $collection Name of the collection
      * @param array  $options    Array of update options
      *
+     * @throws Exception
      * @access public
      * @return boolean
      */
@@ -1207,8 +1249,8 @@ class Builder
      *
      * Renames a field
      *
-     * @param string $old_name Name of the field to be renamed
-     * @param string $new_name New name for $old_name
+     * @param string $oldName
+     * @param string $newName
      *
      * @access public
      * @return \MongoQB\Builder
@@ -1228,6 +1270,7 @@ class Builder
      *
      * @param string $collection Name of the collection
      *
+     * @throws Exception
      * @access public
      * @return \MongoQB\Builder
      */
@@ -1261,6 +1304,7 @@ class Builder
      *
      * @param string $collection Name of the collection
      *
+     * @throws Exception
      * @access public
      * @return \MongoQB\Builder
      */
@@ -1294,6 +1338,7 @@ class Builder
      *
      * @param array $query The command query
      *
+     * @throws Exception
      * @access public
      * @return \MongoQB\Builder
      */
@@ -1324,6 +1369,7 @@ class Builder
      *  the field name, value should be index type
      * @param array $options Array of options
      *
+     * @throws Exception
      * @access public
      * @return \MongoQB\Builder
      */
@@ -1340,6 +1386,7 @@ class Builder
              collection because no keys were specified');
         }
 
+        $keys = array();
         foreach ($fields as $field => $value) {
             if($value === -1 OR $value === false OR
              strtolower($value) === 'desc') {
@@ -1374,6 +1421,7 @@ class Builder
      * @param array  $keys       Array of index keys to be removed. Array key
      *  should be the field name, the value should be -1
      *
+     * @throws Exception
      * @access public
      * @return \MongoQB\Builder
      */
@@ -1410,6 +1458,7 @@ class Builder
      *
      * @param string $collection Name of the collection
      *
+     * @throws Exception
      * @access public
      * @return array|object
      */
@@ -1432,6 +1481,7 @@ class Builder
      *
      * @param string $collection Name of the collection
      *
+     * @throws Exception
      * @access public
      * @return array|object
      */
@@ -1485,6 +1535,7 @@ class Builder
      * Establish a connection to MongoDB using the connection string generated
      *  in the connection_string() method.
      *
+     * @throws Exception
      * @return \MongoQB\Builder
      * @access private
      */
@@ -1520,7 +1571,7 @@ class Builder
             return $this;
         }
         // @codeCoverageIgnoreStart
-        catch (MongoConnectionException $Exception) {
+        catch (\MongoConnectionException $Exception) {
                 throw new \MongoQB\Exception('Unable to connect to MongoDB: ' .
                  $Exception->getMessage());
                 // @codeCoverageIgnoreEnd
@@ -1531,6 +1582,7 @@ class Builder
      * Build connectiong string.
      *
      * @access private
+     * @throws Exception
      * @return void
      */
     private function _connectionString()
@@ -1560,6 +1612,10 @@ class Builder
      * Reset the class variables to default settings.
      *
      * @access private
+     *
+     * @param string $collection
+     * @param string $action
+     *
      * @return void
      */
     private function _clear($collection, $action)

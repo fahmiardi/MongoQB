@@ -223,6 +223,17 @@ class QBtest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array(), $result);
 	}
 
+    function test_getOne()
+    {
+        $qb = new \MongoQB\Builder(array(
+            'dsn'	=>	'mongodb://localhost:27017/mongoqbtest',
+        ), true);
+
+        $result = $qb->getOne('test_getOne');
+
+        $this->assertEquals(null, $result);
+    }
+
 	/**
 	 * @expectedException \MongoQB\Exception
 	 */
@@ -342,6 +353,12 @@ class QBtest extends PHPUnit_Framework_TestCase {
 
 		$this->assertFalse(isset($result[0]['firstname']));
 		$this->assertTrue(isset($result[0]['surname']));
+
+        $qb->select('');
+        $result = $qb->select(array('firstname'))->getOne('test_select');
+
+        $this->assertTrue(isset($result['firstname']));
+        $this->assertFalse(isset($result['lastname']));
 	}
 
 	function test_where()

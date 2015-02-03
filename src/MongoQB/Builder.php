@@ -968,6 +968,8 @@ class Builder
         }
 
         try {
+            \MongoCursor::$timeout = -1;
+
             $options = array_merge(array($this->_querySafety => true,
              'multiple' => false), $options);
             $result = $this->_dbhandle->{$collection}->update($this->wheres,
